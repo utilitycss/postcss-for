@@ -1,0 +1,45 @@
+{
+  "name": "@utilitycss/postcss-for",
+  "version": "2.1.1",
+  "description": "PostCSS plugin that enables SASS-like for loop syntax in your CSS",
+  "keywords": [
+    "postcss",
+    "css",
+    "postcss-plugin",
+    "for",
+    "loop",
+    "sass",
+    "from",
+    "to",
+    "iterate",
+    "nested"
+  ],
+  "author": "Sylvester Aswin Stanley <me@sylvesteraswin.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:utilitycss/postcss-for.git"
+  },
+  "dependencies": {
+    "postcss": "^8.2.6",
+    "postcss-simple-vars": "^6.0.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.13.1",
+    "@babel/eslint-parser": "^7.13.4",
+    "chai": "4.3.0",
+    "eslint": "^7.20.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-prettier": "^3.3.1",
+    "gulp": "4.0.2",
+    "gulp-eslint": "6.0.0",
+    "gulp-mocha": "8.0.0",
+    "postcss-custom-properties": "^11.0.0",
+    "prettier": "^2.2.1"
+  },
+  "scripts": {
+    "lint": "eslint '**/*.{js,ts,tsx}'",
+    "test": "gulp"
+  }
+}
