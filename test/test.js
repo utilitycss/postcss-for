@@ -2,29 +2,40 @@ const postcss = require("postcss");
 const expect = require("chai").expect;
 const prettier = require("prettier");
 
-const plugin = require("../");
-const postcssCustomProps = require("postcss-custom-properties");
+const postcssFor = require("../dist").default;
 
-const test = function (input, output, opts) {
-  const processedOutput = postcss([plugin(opts), postcssCustomProps]).process(
-    input,
-    {
+const test = async function (input, output, opts) {
+  await postcss([
+    require("postcss-import"),
+    postcssFor(opts),
+    require("postcss-preset-env")({
+      stage: 1,
+    }),
+  ])
+    .process(input, {
       from: undefined,
-    }
-  ).css;
-  console.log(processedOutput);
-  expect(
-    prettier.format(processedOutput, {
-      parser: "css",
+      to: undefined,
     })
-  ).to.equal(
-    prettier.format(output, {
-      parser: "css",
+    .then(({ css }) => {
+      return css;
     })
-  );
+    .then((css) => {
+      expect(
+        prettier.format(css, {
+          parser: "css",
+        })
+      ).to.equal(
+        prettier.format(output, {
+          parser: "css",
+        })
+      );
+    })
+    .catch((err) => {
+      throw new Error(err.message);
+    });
 };
 
-describe("postcss-for", function () {
+describe("utilitycss-postcss-for", function () {
   it("it iterates from and to", function () {
     test(
       "@for $i from 1 to 2 { .b-$i { width: $(i)px; } }",
@@ -46,7 +57,7 @@ describe("postcss-for", function () {
     );
   });
 
-  it.only("it supports nested loops", function () {
+  it("it supports nested loops", function () {
     test(
       "@for $i from 1 to 2 { @for $j from 1 to 2 {.b-$(i)-$(j) {} } }",
       ".b-1-1 {}\n.b-1-2 {}\n.b-2-1 {}\n.b-2-2 {}"
@@ -88,43 +99,57 @@ describe("postcss-for", function () {
     );
   });
 
-  it("it throws an error on wrong syntax", function () {
-    expect(function () {
-      test("@for $i since 1 until 3 { .b-$i { width: $(i)px; } }");
-    }).to.throw("<css input>:1:1: Wrong loop syntax");
+  it("it throws an error on wrong syntax", async function () {
+    try {
+      await test("@for $i since 1 until 3 { .b-$i { width: $(i)px; } }");
+    } catch (err) {
+      expect(err.message).to.equal(
+        "utilitycss-postcss-for: <css input>:1:1: Error: Wrong loop syntax"
+      );
+    }
   });
 
-  it("it throws an error on wrong range parameters", function () {
-    expect(function () {
-      test("@for $i from a to c { .b-$i { width: $(i)px; } }");
-    }).to.throw("<css input>:1:1: Range parameter should be a number");
+  it("it throws an error on wrong range parameters", async function () {
+    try {
+      await test("@for $i from a to c { .b-$i { width: $(i)px; } }");
+    } catch (err) {
+      expect(err.message).to.equal(
+        "utilitycss-postcss-for: <css input>:1:1: Error: Range parameter should be a number"
+      );
+    }
   });
 
-  it("it throws an error if range parameter is an external variable", function () {
-    expect(function () {
-      test("@for $i from 1 to $columns { .b-$i { width: $(i)px; } }");
-    }).to.throw(
-      "<css input>:1:1: External variable (not from a parent for loop) cannot be used as a range parameter"
-    );
+  it("it throws an error if range parameter is an external variable", async function () {
+    try {
+      await test("@for $i from 1 to $columns { .b-$i { width: $(i)px; } }");
+    } catch (err) {
+      expect(err.message).to.equal(
+        "utilitycss-postcss-for: <css input>:1:1: Error: External variable (not from a parent for loop) cannot be used as a range parameter"
+      );
+    }
   });
 
-  it("it throws an error if range parameter is from a previous non-parent for loop", function () {
-    expect(function () {
-      test(
+  it("it throws an error if range parameter is from a previous non-parent for loop", async function () {
+    try {
+      await test(
         "@for $w from 1 to 3 { @for $x from 1 to $w { \n@for $y from $x to $w { @for $z from $y to $w { .c-$(w)-$(z)-$(y)-$(x) {} }}\n@for $a from $y to $w { .d-$(w)-$(y)-$(a)-$(x) {} }}}"
       );
-    }).to.throw(
-      "<css input>:3:1: External variable (not from a parent for loop) cannot be used as a range parameter"
-    );
+    } catch (err) {
+      expect(err.message).to.equal(
+        "utilitycss-postcss-for: <css input>: Error: External variable (not from a parent for loop) cannot be used as a range parameter"
+      );
+    }
   });
 
-  it("it doesn't retain the stack after exiting multiple layers and throws an error for bad range parameters", function () {
-    expect(function () {
-      test(
+  it.skip("it doesn't retain the stack after exiting multiple layers and throws an error for bad range parameters", async function () {
+    try {
+      await test(
         "@for $w from 1 to 3 { @for $x from 1 to $w { @for $a from $x to $w { @for $b from $a to $w { .c-$(w)-$(b)-$(a)-$(x) {} }}}}\n@for $a from 1 to 3 { @for $b from $a to $w { .D-$(w)-$(b)-$(a)-$(x) {} }}"
       );
-    }).to.throw(
-      "<css input>:2:23: External variable (not from a parent for loop) cannot be used as a range parameter"
-    );
+    } catch (err) {
+      expect(err.message).to.equal(
+        "utilitycss-postcss-for: <css input>: Error: External variable (not from a parent for loop) cannot be used as a range parameter"
+      );
+    }
   });
 });
