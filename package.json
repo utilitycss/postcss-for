@@ -48,5 +48,16 @@
     "build:watch": "tsc -w",
     "lint": "eslint './src/**/*.{js,ts,tsx}'",
     "test": "mocha"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js}": [
+      "prettier --no-config --write",
+      "eslint --fix"
+    ]
   }
 }
