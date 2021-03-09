@@ -134,7 +134,7 @@ const plugin = (): Plugin => {
 
       debug("newCSS.css", newCSS.css);
 
-      rule.parent.insertBefore(rule, newCSS.css.split(",").join(""));
+      rule.parent.insertBefore(rule, newCSS.css.split(",@for").join("@for"));
     }
   };
 
