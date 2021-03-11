@@ -63,6 +63,13 @@ describe("utilitycss-postcss-for", function () {
     );
   });
 
+  it("it handles multiple selectors", async function () {
+    await test(
+      "@for $i from 1 to 2 { .b-$i {} .c-$i {} }",
+      ".b-1 {} .c-1 {}\n.b-2 {} .c-2 {}"
+    );
+  });
+
   it("it supports nested loops", async function () {
     await test(
       "@for $i from 1 to 2 { @for $j from 1 to 2 {.b-$(i)-$(j) {} } }",
