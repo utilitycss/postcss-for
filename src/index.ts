@@ -130,11 +130,11 @@ const plugin = (): Plugin => {
         vars({
           only: value,
         }),
-      ]).process(content.nodes);
+      ]).process(content.nodes.join(""));
 
       debug("newCSS.css", newCSS.css);
 
-      rule.parent.insertBefore(rule, newCSS.css.split(",@for").join("@for"));
+      rule.parent.insertBefore(rule, newCSS.css);
     }
   };
 
